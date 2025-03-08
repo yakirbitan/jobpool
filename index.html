@@ -3,58 +3,434 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobPool.ai - Coming Soon</title>
+    <title>JobPool.ai - AI-Powered Job Matching</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-            background-color: #f4f4f4;
+            font-family: 'Inter', sans-serif;
             margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
-        .container {
+
+        /* For animation effects */
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-in-out;
+        }
+
+        .animate-slide-up-delay-1 {
+            animation: slideUp 0.5s ease-in-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .animate-slide-up-delay-2 {
+            animation: slideUp 0.5s ease-in-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .animate-slide-up-delay-3 {
+            animation: slideUp 0.5s ease-in-out 0.6s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* For scrolling logos */
+        .logos-container {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .logos-scroll {
+            display: inline-block;
+            animation: scroll 30s linear infinite;
+        }
+
+        .logo-item {
+            display: inline-block;
+            margin: 0 24px;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Mobile menu */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 300px;
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 1.5rem;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
         }
-        h1 {
-            color: #333;
+
+        .mobile-menu.active {
+            transform: translateX(0);
         }
-        p {
-            color: #666;
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
         }
-        input[type="email"] {
-            padding: 10px;
-            width: 250px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #0056b3;
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>🚀 JobPool.ai is Coming Soon! 🚀</h1>
-        <p>To enable job search with AI agents in a smart way</p>
-        <input type="email" placeholder="Enter your email" required>
-        <button>Subscribe</button>
+<body class="min-h-screen bg-gray-100">
+    <!-- Header & Navigation -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="text-2xl font-bold text-blue-600">JobPool.ai</span>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium">Home</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium">Find Job</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium">Find Candidate</a>
+                    <button id="language-toggle" class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600">
+                        <i class="fas fa-globe mr-2"></i>
+                        <span id="language-text">EN</span>
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="p-2 rounded-md text-gray-500 hover:text-blue-600 focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="overlay" class="overlay"></div>
+    <div id="mobile-menu" class="mobile-menu flex flex-col h-full">
+        <div class="flex items-center justify-between mb-6">
+            <span class="text-xl font-bold text-blue-600">JobPool.ai</span>
+            <button id="close-menu" class="p-2 rounded-md text-gray-500 hover:text-blue-600 focus:outline-none">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <nav class="flex flex-col space-y-4">
+            <a href="#" class="text-lg font-medium text-gray-700 hover:text-blue-600">Home</a>
+            <a href="#" class="text-lg font-medium text-gray-700 hover:text-blue-600">Find Job</a>
+            <a href="#" class="text-lg font-medium text-gray-700 hover:text-blue-600">Find Candidate</a>
+        </nav>
+        
+        <div class="mt-8">
+            <button id="mobile-language-toggle" class="w-full px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center gap-2 text-gray-700 hover:bg-gray-50">
+                <i class="fas fa-globe"></i>
+                <span id="mobile-language-text">Switch to Hebrew</span>
+            </button>
+        </div>
     </div>
+
+    <!-- Hero Section -->
+    <section class="relative bg-gray-200">
+        <div class="max-w-7xl mx-auto">
+            <div class="md:flex">
+                <!-- Left Column - Text Content -->
+                <div class="w-full md:w-1/2 p-4 md:p-12 flex flex-col justify-center">
+                    <div class="animate-slide-up">
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+                            Launching Soon!
+                        </h1>
+                        <p class="text-lg text-gray-600 mb-8 max-w-lg">
+                            Connect with the perfect job opportunities using our AI-powered matching system. 
+                            Let our advanced algorithms find your ideal career match instantly.
+                        </p>
+                        
+                        <!-- CTA Email Form -->
+                        <form id="subscribe-form" class="flex gap-3 max-w-md">
+                            <div class="flex-1">
+                                <input
+                                    type="email"
+                                    id="email-input"
+                                    placeholder="Enter your email"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors whitespace-nowrap inline-flex items-center">
+                                <i class="fas fa-envelope mr-2"></i>
+                                Notify Me
+                            </button>
+                        </form>
+                        
+                        <p id="subscribe-message" class="mt-3 text-green-600 hidden">
+                            Thanks for subscribing! We'll keep you updated.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Right Column - Hero Image -->
+                <div class="w-full md:w-1/2 bg-gray-300 relative">
+                    <div class="h-80 md:h-full w-full relative">
+                        <!-- Character image with bean bag and laptop -->
+                        <img 
+                            src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
+                            alt="Happy character finding a job" 
+                            class="object-cover h-full w-full"
+                        />
+                        
+                        <!-- Overlay to match the design -->
+                        <div class="absolute inset-0 bg-gray-300 opacity-30"></div>
+                        
+                        <!-- Excitement bubble -->
+                        <div class="absolute top-8 right-8 bg-orange-500 text-white p-3 rounded-full shadow-lg transform rotate-12">
+                            <p class="font-bold text-sm">Found my dream job!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                    How JobPool.ai Works
+                </h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    AI-Powered Job Matching in 3 Steps
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="animate-slide-up-delay-1 bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                            <span class="text-2xl font-bold text-gray-400">1️⃣</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-gray-900">Upload Your Resume (Without Personal Details)</h3>
+                        <p class="text-gray-600 flex-grow">Easily upload your resume without any personally identifiable information. Our system analyzes your skills, experience, and background while ensuring complete privacy.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="animate-slide-up-delay-2 bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-orange-100 text-orange-600 rounded-full w-12 h-12 flex items-center justify-center">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                            <span class="text-2xl font-bold text-gray-400">2️⃣</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-gray-900">Describe Your Ideal Job in a Free-Form Prompt</h3>
+                        <p class="text-gray-600 flex-grow">Instead of filling out rigid forms, you simply write (or dictate) a free-form prompt describing your experience, the types of companies you prefer, industries you're passionate about, technologies you want to work with, and your ideal career path.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="animate-slide-up-delay-3 bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="bg-purple-100 text-purple-600 rounded-full w-12 h-12 flex items-center justify-center">
+                                <i class="fas fa-magic"></i>
+                            </div>
+                            <span class="text-2xl font-bold text-gray-400">3️⃣</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-gray-900">AI Matches You to the Perfect Job Opportunities</h3>
+                        <p class="text-gray-600 flex-grow">Our AI-powered system scans thousands of job listings, cross-referencing them with your resume and personal job preferences. It finds the most relevant positions that match your skills, aspirations, and desired company profiles – making sure you land the best job tailored just for you. 🚀</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Companies -->
+    <section class="py-12 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-2xl font-semibold text-center text-gray-900 mb-8">
+                Trusted by Leading Companies
+            </h2>
+            <div class="logos-container">
+                <div class="logos-scroll">
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/1200px-Google_2015_logo.svg.png" 
+                            alt="Google" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1024px-Amazon_logo.svg.png"
+                            alt="Amazon" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Facebook_logo_%28square%29.png/480px-Facebook_logo_%28square%29.png" 
+                            alt="Facebook" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1200px-Microsoft_logo.svg.png" 
+                            alt="Microsoft" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Meta_Platforms_Inc._logo.svg/1200px-Meta_Platforms_Inc._logo.svg.png" 
+                            alt="Meta" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Nvidia_logo.svg/1280px-Nvidia_logo.svg.png" 
+                            alt="Nvidia" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                </div>
+                <!-- Duplicate for infinite scroll effect -->
+                <div class="logos-scroll">
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/1200px-Google_2015_logo.svg.png" 
+                            alt="Google" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1024px-Amazon_logo.svg.png"
+                            alt="Amazon" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Facebook_logo_%28square%29.png/480px-Facebook_logo_%28square%29.png" 
+                            alt="Facebook" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1200px-Microsoft_logo.svg.png" 
+                            alt="Microsoft" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Meta_Platforms_Inc._logo.svg/1200px-Meta_Platforms_Inc._logo.svg.png" 
+                            alt="Meta" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                    <div class="logo-item">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Nvidia_logo.svg/1280px-Nvidia_logo.svg.png" 
+                            alt="Nvidia" class="h-8 md:h-10 w-auto grayscale hover:grayscale-0 transition-all duration-300">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-600">
+                Top AI-Powered Talent Matching @ 2025
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const closeMenuButton = document.getElementById('close-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const overlay = document.getElementById('overlay');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        const closeMenu = () => {
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        };
+
+        closeMenuButton.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', closeMenu);
+
+        // Language toggle functionality
+        const languageToggle = document.getElementById('language-toggle');
+        const languageText = document.getElementById('language-text');
+        const mobileLanguageToggle = document.getElementById('mobile-language-toggle');
+        const mobileLanguageText = document.getElementById('mobile-language-text');
+        let currentLanguage = 'en';
+
+        const toggleLanguage = () => {
+            currentLanguage = currentLanguage === 'en' ? 'he' : 'en';
+            languageText.textContent = currentLanguage.toUpperCase();
+            mobileLanguageText.textContent = currentLanguage === 'en' ? 'Switch to Hebrew' : 'Switch to English';
+        };
+
+        languageToggle.addEventListener('click', toggleLanguage);
+        mobileLanguageToggle.addEventListener('click', () => {
+            toggleLanguage();
+            closeMenu();
+        });
+
+        // Subscription form functionality
+        const subscribeForm = document.getElementById('subscribe-form');
+        const emailInput = document.getElementById('email-input');
+        const subscribeMessage = document.getElementById('subscribe-message');
+
+        subscribeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (emailInput.value) {
+                subscribeMessage.classList.remove('hidden');
+                emailInput.value = '';
+            }
+        });
+
+        // Animation on scroll
+        document.addEventListener('DOMContentLoaded', () => {
+            const animateElements = document.querySelectorAll('.animate-slide-up-delay-1, .animate-slide-up-delay-2, .animate-slide-up-delay-3');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Keep the animation class for the element
+                        entry.target.style.visibility = 'visible';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            animateElements.forEach(element => {
+                observer.observe(element);
+            });
+        });
+    </script>
 </body>
 </html>
